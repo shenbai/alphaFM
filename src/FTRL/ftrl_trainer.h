@@ -1,12 +1,13 @@
 #ifndef FTRL_TRAINER_H_
 #define FTRL_TRAINER_H_
-
+#include <iostream>
 #include "../Frame/pc_frame.h"
 #include "ftrl_model.h"
 #include "../Sample/fm_sample.h"
 #include "../Utils/utils.h"
+#include <mutex>
 
-
+using namespace std;
 struct trainer_option
 {
     trainer_option() : k0(true), k1(true), factor_num(8), init_mean(0.0), init_stdev(0.1), w_alpha(0.05), w_beta(1.0), w_l1(0.1), w_l2(5.0),
@@ -145,6 +146,9 @@ private:
     bool k0;
     bool k1;
     bool force_v_sparse;
+    double total_loss;
+    int num;
+    mutex mtx;
 };
 
 
@@ -160,6 +164,8 @@ ftrl_trainer::ftrl_trainer(const trainer_option& opt)
     v_l2 = opt.v_l2;
     k0 = opt.k0;
     k1 = opt.k1;
+    total_loss = 0.0;
+    num = 0;
     force_v_sparse = opt.force_v_sparse;
     pModel = new ftrl_model(opt.factor_num, opt.init_mean, opt.init_stdev);
 }
@@ -254,7 +260,16 @@ void ftrl_trainer::train(int y, const vector<pair<string, double> >& x)
     vector<double> sum(pModel->factor_num);
     double bias = thetaBias->wi;
     double p = pModel->predict(x, bias, theta, sum);
+    double score = 1.0 / (1.0 + exp(-p));
+    mtx.lock();
+    total_loss += y * log(score + 0.000000001) + (1 - y)*log(1-score + 0.000000001);
+    num++;  
+    if (num%1000000==0){
+        cout << "loss : " << total_loss/num << ", " << score << endl;
+    }
+    mtx.unlock();
     double mult = y * (1 / (1 + exp(-p * y)) - 1);
+
     //update w_n, w_z
     for(int i = 0; i <= xLen; ++i)
     {
