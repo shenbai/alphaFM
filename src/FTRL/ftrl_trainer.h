@@ -26,27 +26,28 @@ struct trainer_option
         if(0 == argc) throw invalid_argument("invalid command\n");
         for(int i = 0; i < argc; ++i)
         {
+            cout << args[i] << endl;
             if(args[i].compare("-m") == 0) 
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -m\n");
                 model_path = args[++i];
             }
-            if (args[i].compare("-s") == 0)
+            else if (args[i].compare("-s") == 0)
             {
                 if (i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -s\n");
                 space_size = stoi(args[++i]);
             }
             else if(args[i].compare("-dim") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -dim\n");
                 vector<string> strVec;
                 string tmpStr = args[++i];
                 utils::splitString(tmpStr, ',', &strVec);
                 if(strVec.size() != 3)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -dim ~\n");
                 k0 = 0 == stoi(strVec[0]) ? false : true;
                 k1 = 0 == stoi(strVec[1]) ? false : true;
                 factor_num = stoi(strVec[2]);
@@ -54,80 +55,80 @@ struct trainer_option
             else if(args[i].compare("-init_stdev") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -init_stdev\n");
                 init_stdev = stod(args[++i]);
             }
             else if(args[i].compare("-w_alpha") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -w_alpha\n");
                 w_alpha = stod(args[++i]);
             }
             else if(args[i].compare("-w_beta") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -w_beta\n");
                 w_beta = stod(args[++i]);
             }
             else if(args[i].compare("-w_l1") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -w_l1\n");
                 w_l1 = stod(args[++i]);
             }
             else if(args[i].compare("-w_l2") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -w_l2\n");
                 w_l2 = stod(args[++i]);
             }
             else if(args[i].compare("-v_alpha") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -v_alpha\n");
                 v_alpha = stod(args[++i]);
             }
             else if(args[i].compare("-v_beta") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -v_beta\n");
                 v_beta = stod(args[++i]);
             }
             else if(args[i].compare("-v_l1") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -v_l1\n");
                 v_l1 = stod(args[++i]);
             }
             else if(args[i].compare("-v_l2") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -v_l1\n");
                 v_l2 = stod(args[++i]);
             }
             else if(args[i].compare("-core") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -core\n");
                 threads_num = stoi(args[++i]);
             }
             else if(args[i].compare("-im") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -im\n");
                 init_m_path = args[++i];
                 b_init = true; //if im field exits , that means b_init = true !
             }
             else if(args[i].compare("-fvs") == 0)
             {
                 if(i == argc - 1)
-                    throw invalid_argument("invalid command\n");
+                    throw invalid_argument("invalid command -fvs\n");
                 int fvs = stoi(args[++i]);
                 force_v_sparse = (1 == fvs) ? true : false;
             }
             else
             {
-                throw invalid_argument("invalid command\n");
+                throw invalid_argument("invalid command ~~\n");
                 break;
             }
         }

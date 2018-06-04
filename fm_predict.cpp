@@ -16,15 +16,15 @@ struct Option
 string predict_help() 
 {
     return string(
-            "\nusage: cat sample | ./fm_predict [<options>]"
-            "\n"
-            "\n"
-            "options:\n"
-            "-m <model_path>: set the model path\n"
-            "-dim <factor_num>: dim of 2-way interactions\tdefault:8\n"
-            "-core <threads_num>: set the number of threads\tdefault:1\n"
-            "-out <predict_path>: set the predict path\n"
-    );
+        "\nusage: cat sample | ./fm_predict [<options>]"
+        "\n"
+        "\n"
+        "options:\n"
+        "-m <model_path>: set the model path\n"
+        "-s <model_path>: set space size\n"
+        "-dim <factor_num>: dim of 2-way interactions\tdefault:8\n"
+        "-core <threads_num>: set the number of threads\tdefault:1\n"
+        "-out <predict_path>: set the predict path\n");
 }
 
 vector<string> argv_to_args(int argc, char* argv[]) 
