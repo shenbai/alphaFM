@@ -9,25 +9,25 @@ using namespace std;
 string train_help() 
 {
     return string(
-            "\nusage: cat sample | ./fm_train [<options>]"
-            "\n"
-            "\n"
-            "options:\n"
-            "-m <model_path>: set the output model path\n"
-            "-dim <k0,k1,k2>: k0=use bias, k1=use 1-way interactions, k2=dim of 2-way interactions\tdefault:1,1,8\n"
-            "-init_stdev <stdev>: stdev for initialization of 2-way factors\tdefault:0.1\n"
-            "-w_alpha <w_alpha>: w is updated via FTRL, alpha is one of the learning rate parameters\tdefault:0.05\n"
-            "-w_beta <w_beta>: w is updated via FTRL, beta is one of the learning rate parameters\tdefault:1.0\n"
-            "-w_l1 <w_L1_reg>: L1 regularization parameter of w\tdefault:0.1\n"
-            "-w_l2 <w_L2_reg>: L2 regularization parameter of w\tdefault:5.0\n"
-            "-v_alpha <v_alpha>: v is updated via FTRL, alpha is one of the learning rate parameters\tdefault:0.05\n"
-            "-v_beta <v_beta>: v is updated via FTRL, beta is one of the learning rate parameters\tdefault:1.0\n"
-            "-v_l1 <v_L1_reg>: L1 regularization parameter of v\tdefault:0.1\n"
-            "-v_l2 <v_L2_reg>: L2 regularization parameter of v\tdefault:5.0\n"
-            "-core <threads_num>: set the number of threads\tdefault:1\n"
-            "-im <initial_model_path>: set the initial value of model\n"
-            "-fvs <force_v_sparse>: if fvs is 1, set vi = 0 whenever wi = 0\tdefault:0\n"
-    );
+        "\nusage: cat sample | ./fm_train [<options>]"
+        "\n"
+        "\n"
+        "options:\n"
+        "-m <model_path>: set the output model path\n"
+        "-s <space_size>: set space size, default 2^28\n"
+        "-dim <k0,k1,k2>: k0=use bias, k1=use 1-way interactions, k2=dim of 2-way interactions\tdefault:1,1,8\n"
+        "-init_stdev <stdev>: stdev for initialization of 2-way factors\tdefault:0.1\n"
+        "-w_alpha <w_alpha>: w is updated via FTRL, alpha is one of the learning rate parameters\tdefault:0.05\n"
+        "-w_beta <w_beta>: w is updated via FTRL, beta is one of the learning rate parameters\tdefault:1.0\n"
+        "-w_l1 <w_L1_reg>: L1 regularization parameter of w\tdefault:0.1\n"
+        "-w_l2 <w_L2_reg>: L2 regularization parameter of w\tdefault:5.0\n"
+        "-v_alpha <v_alpha>: v is updated via FTRL, alpha is one of the learning rate parameters\tdefault:0.05\n"
+        "-v_beta <v_beta>: v is updated via FTRL, beta is one of the learning rate parameters\tdefault:1.0\n"
+        "-v_l1 <v_L1_reg>: L1 regularization parameter of v\tdefault:0.1\n"
+        "-v_l2 <v_L2_reg>: L2 regularization parameter of v\tdefault:5.0\n"
+        "-core <threads_num>: set the number of threads\tdefault:1\n"
+        "-im <initial_model_path>: set the initial value of model\n"
+        "-fvs <force_v_sparse>: if fvs is 1, set vi = 0 whenever wi = 0\tdefault:0\n");
 }
 
 vector<string> argv_to_args(int argc, char* argv[]) 

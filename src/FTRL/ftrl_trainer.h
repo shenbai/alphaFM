@@ -12,12 +12,12 @@ struct trainer_option
 {
     trainer_option() : k0(true), k1(true), factor_num(8), init_mean(0.0), init_stdev(0.1), w_alpha(0.05), w_beta(1.0), w_l1(0.1), w_l2(5.0),
                v_alpha(0.05), v_beta(1.0), v_l1(0.1), v_l2(5.0), 
-               threads_num(1), b_init(false), force_v_sparse(false) {}
+               threads_num(1), b_init(false), force_v_sparse(false),space_size(2^28) {}
     string model_path, init_m_path;
     double init_mean, init_stdev;
     double w_alpha, w_beta, w_l1, w_l2;
     double v_alpha, v_beta, v_l1, v_l2;
-    int threads_num, factor_num;
+    int threads_num, factor_num, space_size;
     bool k0, k1, b_init, force_v_sparse;
     
     void parse_option(const vector<string>& args) 
@@ -31,6 +31,12 @@ struct trainer_option
                 if(i == argc - 1)
                     throw invalid_argument("invalid command\n");
                 model_path = args[++i];
+            }
+            if (args[i].compare("-s") == 0)
+            {
+                if (i == argc - 1)
+                    throw invalid_argument("invalid command\n");
+                space_size = stoi(args[++i]);
             }
             else if(args[i].compare("-dim") == 0)
             {
@@ -138,7 +144,7 @@ public:
     bool loadModel(ifstream& in);
     void outputModel(ofstream& out);
 private:
-    void train(int y, const vector<pair<string, double> >& x);
+    void train(int y, const vector<pair<int, double> >& x);
 private:
     ftrl_model* pModel;
     double w_alpha, w_beta, w_l1, w_l2;
@@ -167,7 +173,7 @@ ftrl_trainer::ftrl_trainer(const trainer_option& opt)
     total_loss = 0.0;
     num = 0;
     force_v_sparse = opt.force_v_sparse;
-    pModel = new ftrl_model(opt.factor_num, opt.init_mean, opt.init_stdev);
+    pModel = new ftrl_model(opt.factor_num, opt.space_size, opt.init_mean, opt.init_stdev);
 }
 
 void ftrl_trainer::run_task(vector<string>& dataBuffer)
@@ -193,14 +199,14 @@ void ftrl_trainer::outputModel(ofstream& out)
 
 
 //输入一个样本，更新参数
-void ftrl_trainer::train(int y, const vector<pair<string, double> >& x)
+void ftrl_trainer::train(int y, const vector<pair<int, double> >& x)
 {
     ftrl_model_unit* thetaBias = pModel->getOrInitModelUnitBias();
     vector<ftrl_model_unit*> theta(x.size(), NULL);
     int xLen = x.size();
     for(int i = 0; i < xLen; ++i)
     {
-        const string& index = x[i].first;
+        const int& index = x[i].first;
         theta[i] = pModel->getOrInitModelUnit(index);
     }
     //update w via FTRL

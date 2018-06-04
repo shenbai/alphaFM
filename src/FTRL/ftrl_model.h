@@ -91,63 +91,65 @@ class ftrl_model
 public:
     ftrl_model_unit* muBias;
     unordered_map<string, ftrl_model_unit*> muMap;
-
+    vector<ftrl_model_unit*> array;
     int factor_num;
     double init_stdev;
     double init_mean;
+    int space_size;
 
 public:
-    ftrl_model(double _factor_num);
-    ftrl_model(double _factor_num, double _mean, double _stdev);
-    ftrl_model_unit* getOrInitModelUnit(string index);
+    ftrl_model(double _factor_num, int _space_size);
+    ftrl_model(double _factor_num, int _space_size, double _mean, double _stdev);
+    ftrl_model_unit* getOrInitModelUnit(int index);
     ftrl_model_unit* getOrInitModelUnitBias();
 
-    double predict(const vector<pair<string, double> >& x, double bias, vector<ftrl_model_unit*>& theta, vector<double>& sum);
-    double getScore(const vector<pair<string, double> >& x, double bias, unordered_map<string, ftrl_model_unit*>& theta);
+    double predict(const vector<pair<int, double> > &x, double bias, vector<ftrl_model_unit *> &theta, vector<double> &sum);
+    double getScore(const vector<pair<int, double> > &x, double bias);
     void outputModel(ofstream& out);
     bool loadModel(ifstream& in);
     void debugPrintModel();
 
 private:
-    double get_wi(unordered_map<string, ftrl_model_unit*>& theta, const string& index);
-    double get_vif(unordered_map<string, ftrl_model_unit*>& theta, const string& index, int f);
+    double get_wi(const int& index);
+    double get_vif(const int& index, int f);
 private:
     mutex mtx;
     mutex mtx_bias;
 };
 
-
-ftrl_model::ftrl_model(double _factor_num)
+ftrl_model::ftrl_model(double _factor_num, int _space_size)
 {
+    space_size = _space_size;
     factor_num = _factor_num;
     init_mean = 0.0;
     init_stdev = 0.0;
     muBias = NULL;
+    array.resize(space_size);
 }
 
-ftrl_model::ftrl_model(double _factor_num, double _mean, double _stdev)
+ftrl_model::ftrl_model(double _factor_num, int _space_size, double _mean, double _stdev)
 {
+    space_size = _space_size;
     factor_num = _factor_num;
     init_mean = _mean;
     init_stdev = _stdev;
     muBias = NULL;
+    array.resize(space_size);
 }
 
 
-ftrl_model_unit* ftrl_model::getOrInitModelUnit(string index)
+ftrl_model_unit* ftrl_model::getOrInitModelUnit(int index)
 {
-    unordered_map<string, ftrl_model_unit*>::iterator iter = muMap.find(index);
-    if(iter == muMap.end())
-    {
+    ftrl_model_unit* p = array[index];
+    if (p == NULL){
         mtx.lock();
-        ftrl_model_unit* pMU = new ftrl_model_unit(factor_num, init_mean, init_stdev);
-        muMap.insert(make_pair(index, pMU));
+        ftrl_model_unit *pMU = new ftrl_model_unit(factor_num, init_mean, init_stdev);
+        array[index] = pMU;
         mtx.unlock();
-        return pMU;
     }
     else
     {
-        return iter->second;
+        return p;
     }
 }
 
@@ -163,8 +165,7 @@ ftrl_model_unit* ftrl_model::getOrInitModelUnitBias()
     return muBias;
 }
 
-
-double ftrl_model::predict(const vector<pair<string, double> >& x, double bias, vector<ftrl_model_unit*>& theta, vector<double>& sum)
+double ftrl_model::predict(const vector<pair<int, double> > &x, double bias, vector<ftrl_model_unit *> &theta, vector<double> &sum)
 {
     double result = 0;
     result += bias;
@@ -187,14 +188,13 @@ double ftrl_model::predict(const vector<pair<string, double> >& x, double bias, 
     return result;
 }
 
-
-double ftrl_model::getScore(const vector<pair<string, double> >& x, double bias, unordered_map<string, ftrl_model_unit*>& theta)
+double ftrl_model::getScore(const vector<pair<int, double> > &x, double bias)
 {
     double result = 0;
     result += bias;
     for(int i = 0; i < x.size(); ++i)
     {
-        result += get_wi(theta, x[i].first) * x[i].second;
+        result += get_wi(x[i].first) * x[i].second;
     }
     double sum, sum_sqr, d;
     for(int f = 0; f < factor_num; ++f)
@@ -202,7 +202,7 @@ double ftrl_model::getScore(const vector<pair<string, double> >& x, double bias,
         sum = sum_sqr = 0.0;
         for(int i = 0; i < x.size(); ++i)
         {
-            d = get_vif(theta, x[i].first, f) * x[i].second;
+            d = get_vif(x[i].first, f) * x[i].second;
             sum += d;
             sum_sqr += d * d;
         }
@@ -212,30 +212,30 @@ double ftrl_model::getScore(const vector<pair<string, double> >& x, double bias,
 }
 
 
-double ftrl_model::get_wi(unordered_map<string, ftrl_model_unit*>& theta, const string& index)
+double ftrl_model::get_wi(const int& index)
 {
-    unordered_map<string, ftrl_model_unit*>::iterator iter = theta.find(index);
-    if(iter == theta.end())
+    ftrl_model_unit *p = array[index];
+    if (p == NULL)
     {
         return 0.0;
     }
     else
     {
-        return iter->second->wi;
+        return p->wi;
     }
 }
 
 
-double ftrl_model::get_vif(unordered_map<string, ftrl_model_unit*>& theta, const string& index, int f)
+double ftrl_model::get_vif(const int& index, int f)
 {
-    unordered_map<string, ftrl_model_unit*>::iterator iter = theta.find(index);
-    if(iter == theta.end())
+    ftrl_model_unit *p = array[index];
+    if (p == NULL)
     {
         return 0.0;
     }
     else
     {
-        return iter->second->vi[f];
+        return p->vi[f];
     }
 }
 

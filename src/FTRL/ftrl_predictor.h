@@ -9,7 +9,7 @@
 class ftrl_predictor : public pc_task
 {
 public:
-    ftrl_predictor(double _factor_num, ifstream& _fModel, ofstream& _fPredict);
+    ftrl_predictor(double _factor_num, int _space_size, ifstream& _fModel, ofstream& _fPredict);
     virtual void run_task(vector<string>& dataBuffer);
 private:
     ftrl_model* pModel;
@@ -18,9 +18,9 @@ private:
 };
 
 
-ftrl_predictor::ftrl_predictor(double _factor_num, ifstream& _fModel, ofstream& _fPredict):fPredict(_fPredict)
+ftrl_predictor::ftrl_predictor(double _factor_num,int _space_size, ifstream& _fModel, ofstream& _fPredict):fPredict(_fPredict)
 {
-    pModel = new ftrl_model(_factor_num);
+    pModel = new ftrl_model(_factor_num, _space_size);
     if(!pModel->loadModel(_fModel))
     {
         cout << "load model error!" << endl;
@@ -34,7 +34,7 @@ void ftrl_predictor::run_task(vector<string>& dataBuffer)
     for(int i = 0; i < dataBuffer.size(); ++i)
     {
         fm_sample sample(dataBuffer[i]);
-        double score = pModel->getScore(sample.x, pModel->muBias->wi, pModel->muMap);
+        double score = pModel->getScore(sample.x, pModel->muBias->wi);
         outputVec[i] = to_string(sample.y) + " " + to_string(score);
     }
     outMtx.lock();

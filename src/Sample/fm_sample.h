@@ -14,7 +14,7 @@ class fm_sample
 {
 public:
     int y;
-    vector<pair<string, double> > x;
+    vector<pair<int, double> > x;
     fm_sample(const string& line);
 };
 
@@ -26,7 +26,7 @@ fm_sample::fm_sample(const string& line)
     size_t pose = line.find_first_of(spliter, posb);
     int label = atoi(line.substr(posb, pose-posb).c_str());
     this->y = label > 0 ? 1 : -1;
-    string key;
+    int key;
     double value;
     while(pose < line.size())
     {
@@ -41,7 +41,7 @@ fm_sample::fm_sample(const string& line)
             cout << "wrong line input\n" << line << endl;
             throw "wrong line input";
         }
-        key = line.substr(posb, pose-posb);
+        key = stoi(line.substr(posb, pose-posb));
         posb = pose + 1;
         if(posb >= line.size())
         {

@@ -8,9 +8,9 @@ using namespace std;
 
 struct Option 
 {
-    Option() : dim(8), threads_num(1) {}
+    Option() : dim(8), threads_num(1), space_size(2 ^ 28) {}
     string model_path, predict_path;
-    int threads_num, dim;
+    int threads_num, dim, space_size;
 };
 
 string predict_help() 
@@ -58,6 +58,12 @@ Option parse_option(const vector<string>& args)
                 throw invalid_argument("invalid command\n");
             opt.dim = stoi(args[++i]);
         }
+        else if (args[i].compare("-s") == 0)
+        {
+            if (i == argc - 1)
+                throw invalid_argument("invalid command\n");
+            opt.space_size = stoi(args[++i]);
+        }
         else if(args[i].compare("-core") == 0)
         {
             if(i == argc - 1)
@@ -99,7 +105,7 @@ int main(int argc, char* argv[])
     ifstream f_model(opt.model_path.c_str());
     ofstream f_predict(opt.predict_path.c_str(), ofstream::out);
 
-    ftrl_predictor predictor(opt.dim, f_model, f_predict);
+    ftrl_predictor predictor(opt.dim, opt.space_size, f_model, f_predict);
 
     pc_frame frame;
     frame.init(predictor, opt.threads_num);
