@@ -124,7 +124,9 @@ ftrl_model::ftrl_model(double _factor_num, int _space_size)
     init_mean = 0.0;
     init_stdev = 0.0;
     muBias = NULL;
+    cout << "array size 1: " << array.size() << endl;
     array.resize(space_size);
+    cout << "array size 2: " << array.size() << endl;
 }
 
 ftrl_model::ftrl_model(double _factor_num, int _space_size, double _mean, double _stdev)
@@ -145,12 +147,10 @@ ftrl_model_unit* ftrl_model::getOrInitModelUnit(int index)
         mtx.lock();
         ftrl_model_unit *pMU = new ftrl_model_unit(factor_num, init_mean, init_stdev);
         array[index] = pMU;
+        p = pMU;
         mtx.unlock();
     }
-    else
-    {
-        return p;
-    }
+    return p;
 }
 
 

@@ -1,6 +1,7 @@
 #ifndef FTRL_TRAINER_H_
 #define FTRL_TRAINER_H_
 #include <iostream>
+#include <stdio.h>  
 #include "../Frame/pc_frame.h"
 #include "ftrl_model.h"
 #include "../Sample/fm_sample.h"
@@ -26,7 +27,6 @@ struct trainer_option
         if(0 == argc) throw invalid_argument("invalid command\n");
         for(int i = 0; i < argc; ++i)
         {
-            cout << args[i] << endl;
             if(args[i].compare("-m") == 0) 
             {
                 if(i == argc - 1)
@@ -230,6 +230,7 @@ void ftrl_trainer::train(int y, const vector<pair<int, double> >& x)
                 mu.wi = (-1) *
                     (1 / (w_l2 + (w_beta + sqrt(mu.w_ni)) / w_alpha)) *
                     (mu.w_zi - utils::sgn(mu.w_zi) * w_l1);
+
             }
             mu.mtx.unlock();
         }

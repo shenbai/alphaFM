@@ -75,6 +75,7 @@ int main(int argc, char* argv[])
     frame.init(trainer, opt.threads_num);
     frame.run();
 
+
     ofstream f_model(opt.model_path.c_str(), ofstream::out);
     trainer.outputModel(f_model);
     f_model.close();
