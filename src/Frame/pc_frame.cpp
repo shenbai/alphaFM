@@ -1,4 +1,7 @@
 #include "pc_frame.h"
+#include <ctime>
+
+using namespace std;
 
 bool pc_frame::init(pc_task& task, int t_num, int buf_size, int log_num)
 {
@@ -47,7 +50,9 @@ void pc_frame::proThread()
             buffer.push(line);
             if(line_num%logNum == 0)
             {
-                cout << line_num << " lines have finished" << endl;
+                time_t now = time(0);
+                tm *ltm = localtime(&now);
+                cout << 1900 + ltm->tm_year << "-" << 1 + ltm->tm_mon << "-" << ltm->tm_mday << " " << ltm->tm_hour <<":"<< ltm->tm_min << ":" << ltm->tm_sec << "\t" << line_num << " lines have finished" << endl;
             }
         }
         bufMtx.unlock();

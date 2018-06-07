@@ -15,6 +15,7 @@ string train_help()
         "options:\n"
         "-m <model_path>: set the output model path\n"
         "-s <space_size>: set space size, default 2^28\n"
+        "-compress <compress>: compress when output model, default 0\n"
         "-dim <k0,k1,k2>: k0=use bias, k1=use 1-way interactions, k2=dim of 2-way interactions\tdefault:1,1,8\n"
         "-init_stdev <stdev>: stdev for initialization of 2-way factors\tdefault:0.1\n"
         "-w_alpha <w_alpha>: w is updated via FTRL, alpha is one of the learning rate parameters\tdefault:0.05\n"

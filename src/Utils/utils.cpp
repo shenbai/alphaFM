@@ -1,6 +1,10 @@
 #include <cmath>
 #include <stdlib.h>
 #include "utils.h"
+#include <ctime>
+#include <sstream>
+
+using namespace std;
 
 const double kPrecision = 0.0000000001;
 void utils::splitString(string& line, char delimiter, vector<string>* r)
@@ -64,3 +68,11 @@ double utils::gaussian(double mean, double stdev) {
     }
 }
 
+string utils::time_str(){
+  stringstream ss;
+  time_t now = time(0);
+  tm *ltm = localtime(&now);
+  ss << 1900 + ltm->tm_year << "-" << 1 + ltm->tm_mon << "-" << ltm->tm_mday << " " << ltm->tm_hour <<":"<< ltm->tm_min << ":" << ltm->tm_sec;
+  string s = ss.str();
+  return s;
+}

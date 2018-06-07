@@ -6,6 +6,7 @@
 #include <vector>
 #include <mutex>
 #include <iostream>
+#include <sstream>
 #include <cmath>
 #include "../Utils/utils.h"
 
@@ -90,7 +91,7 @@ class ftrl_model
 {
 public:
     ftrl_model_unit* muBias;
-    unordered_map<string, ftrl_model_unit*> muMap;
+    // unordered_map<string, ftrl_model_unit*> muMap;
     vector<ftrl_model_unit*> array;
     int factor_num;
     double init_stdev;
@@ -105,7 +106,7 @@ public:
 
     double predict(const vector<pair<int, double> > &x, double bias, vector<ftrl_model_unit *> &theta, vector<double> &sum);
     double getScore(const vector<pair<int, double> > &x, double bias);
-    void outputModel(ofstream& out);
+    void outputModel(ofstream& out, bool compress);
     bool loadModel(ifstream& in);
     void debugPrintModel();
 
@@ -240,28 +241,86 @@ double ftrl_model::get_vif(const int& index, int f)
 }
 
 
-void ftrl_model::outputModel(ofstream& out)
+void ftrl_model::outputModel(ofstream& out, bool compress)
 {
+    cout << utils::time_str() << " start dump model file" << endl;
     out << "bias " << *muBias << endl;
-    for(unordered_map<string, ftrl_model_unit*>::iterator iter = muMap.begin(); iter != muMap.end(); ++iter)
-    {
-        out << iter->first << " " << *(iter->second) << endl;
+    int num = array.size();
+    int i;
+    int m = 0;
+    stringstream ss;
+    for(i = 0; i < num; i++){
+      ftrl_model_unit *p = array[i];
+      if (p != NULL)
+      {
+        // w
+        //out << i << " " << p->wi << " ";
+        double d = 0.0;
+        ss << i << " " << p->wi << " ";
+        d += p->wi;
+        // v
+        for(int j=0; j< factor_num;j++)
+        {
+          //out << p->vi[j] << " ";
+          ss << p->vi[j] << " ";
+          d += p->vi[j];
+        }
+        if (d == 0){
+          ss.clear();
+          ss.str("");
+          continue;
+        }
+        // wn wz
+        //out << p->w_ni << " " << p->w_zi << " ";
+        ss << p->w_ni << " " << p->w_zi << " ";
+        // vn vz
+        for(int j=0;j < factor_num; j++)
+        {
+          //out << p->v_ni[j] << " ";
+          ss << p->v_ni[j] << " ";
+        }
+        for(int j=0;j< factor_num; j++)
+        {
+          //out << p->v_zi[j] << " ";
+          ss << p->v_zi[j] << " ";
+        }
+        ss << endl;
+        if(m%20000==0)
+        {
+          out << ss.str();
+          ss.clear();
+          ss.str("");
+        }
+        m++;
+      }
     }
+    out << ss.str();
+    ss.clear();
+    ss.str("");
+    cout << utils::time_str() << " finish!" << endl;
+
 }
 
 
 void ftrl_model::debugPrintModel()
 {
     cout << "bias " << *muBias << endl;
-    for(unordered_map<string, ftrl_model_unit*>::iterator iter = muMap.begin(); iter != muMap.end(); ++iter)
-    {
-        cout << iter->first << " " << *(iter->second) << endl;
+    int num = array.size();
+    int i;
+    for(i = 0; i < num; i++){
+      ftrl_model_unit *p = array[i];
+      cout << i << " " << p << endl;
     }
+    // for(unordered_map<string, ftrl_model_unit*>::iterator iter = muMap.begin(); iter != muMap.end(); ++iter)
+    // {
+      // cout << iter->first << " " << *(iter->second) << endl;
+    // }
 }
 
 
 bool ftrl_model::loadModel(ifstream& in)
 {
+    cout << utils::time_str() << " start load model ..." << endl;
     string line;
     if(!getline(in, line))
     {
@@ -282,10 +341,12 @@ bool ftrl_model::loadModel(ifstream& in)
         {
             return false;
         }
-        string& index = strVec[0];
+        int index = stoi(strVec[0]);
         ftrl_model_unit* pMU = new ftrl_model_unit(factor_num, strVec);
-        muMap[index] = pMU;
+        // muMap[index] = pMU;
+        array[index] = pMU;
     }
+    cout << utils::time_str() << "load model completed" << endl;
     return true;
 }
 

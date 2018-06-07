@@ -14,6 +14,7 @@ public:
     double static uniform();
     double static gaussian();
     double static gaussian(double mean, double stdev);
+    string static time_str();
 };
 
 

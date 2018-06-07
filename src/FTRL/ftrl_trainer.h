@@ -13,13 +13,13 @@ struct trainer_option
 {
     trainer_option() : k0(true), k1(true), factor_num(8), init_mean(0.0), init_stdev(0.1), w_alpha(0.05), w_beta(1.0), w_l1(0.1), w_l2(5.0),
                v_alpha(0.05), v_beta(1.0), v_l1(0.1), v_l2(5.0), 
-               threads_num(1), b_init(false), force_v_sparse(false),space_size(2^28) {}
+               threads_num(1), b_init(false), force_v_sparse(false),space_size(pow(2,28)), compress(false) {}
     string model_path, init_m_path;
     double init_mean, init_stdev;
     double w_alpha, w_beta, w_l1, w_l2;
     double v_alpha, v_beta, v_l1, v_l2;
     int threads_num, factor_num, space_size;
-    bool k0, k1, b_init, force_v_sparse;
+    bool k0, k1, b_init, force_v_sparse, compress;
     
     void parse_option(const vector<string>& args) 
     {
@@ -126,6 +126,13 @@ struct trainer_option
                 int fvs = stoi(args[++i]);
                 force_v_sparse = (1 == fvs) ? true : false;
             }
+            else if(args[i].compare("-compress") == 0)
+            {
+                if(i == argc - 1)
+                    throw invalid_argument("invalid command -compress\n");
+                int c = stoi(args[++i]);
+                compress = (1 == compress) ? true : false;
+            }
             else
             {
                 throw invalid_argument("invalid command ~~\n");
@@ -137,6 +144,9 @@ struct trainer_option
 };
 
 
+int num;
+double total_loss;
+mutex mtx;
 class ftrl_trainer : public pc_task
 {
 public:
@@ -153,9 +163,7 @@ private:
     bool k0;
     bool k1;
     bool force_v_sparse;
-    double total_loss;
-    int num;
-    mutex mtx;
+    bool compress;
 };
 
 
@@ -174,6 +182,7 @@ ftrl_trainer::ftrl_trainer(const trainer_option& opt)
     total_loss = 0.0;
     num = 0;
     force_v_sparse = opt.force_v_sparse;
+    compress = opt.compress;
     pModel = new ftrl_model(opt.factor_num, opt.space_size, opt.init_mean, opt.init_stdev);
 }
 
@@ -195,7 +204,7 @@ bool ftrl_trainer::loadModel(ifstream& in)
 
 void ftrl_trainer::outputModel(ofstream& out)
 {
-    return pModel->outputModel(out);
+    return pModel->outputModel(out, compress);
 }
 
 
@@ -270,10 +279,10 @@ void ftrl_trainer::train(int y, const vector<pair<int, double> >& x)
     double p = pModel->predict(x, bias, theta, sum);
     double score = 1.0 / (1.0 + exp(-p));
     mtx.lock();
-    total_loss += y * log(score + 0.000000001) + (1 - y)*log(1-score + 0.000000001);
+    total_loss += y * log(score + 0.0000000001) + (1 - y)*log(1-score + 0.0000000001);
     num++;  
     if (num%1000000==0){
-        cout << "loss : " << total_loss/num << ", " << score << endl;
+        printf("loss : %f, %f\n", total_loss/num, score);
     }
     mtx.unlock();
     double mult = y * (1 / (1 + exp(-p * y)) - 1);

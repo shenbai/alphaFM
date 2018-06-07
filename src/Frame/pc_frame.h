@@ -19,7 +19,7 @@ class pc_frame
 {
 public:
     pc_frame(){}
-    bool init(pc_task& task, int t_num, int buf_size = 5000, int log_num = 5000);
+    bool init(pc_task& task, int t_num, int buf_size = 20000, int log_num = 200000);
     void run();
 
 private:
