@@ -147,6 +147,7 @@ struct trainer_option
 int num;
 double total_loss;
 mutex mtx;
+
 class ftrl_trainer : public pc_task
 {
 public:
@@ -179,8 +180,6 @@ ftrl_trainer::ftrl_trainer(const trainer_option& opt)
     v_l2 = opt.v_l2;
     k0 = opt.k0;
     k1 = opt.k1;
-    total_loss = 0.0;
-    num = 0;
     force_v_sparse = opt.force_v_sparse;
     compress = opt.compress;
     pModel = new ftrl_model(opt.factor_num, opt.space_size, opt.init_mean, opt.init_stdev);
@@ -278,13 +277,17 @@ void ftrl_trainer::train(int y, const vector<pair<int, double> >& x)
     double bias = thetaBias->wi;
     double p = pModel->predict(x, bias, theta, sum);
     double score = 1.0 / (1.0 + exp(-p));
+
     mtx.lock();
-    total_loss += y * log(score + 0.0000000001) + (1 - y)*log(1-score + 0.0000000001);
+    // total_loss += y * log(score + 0.0000000001) + (1 - y)*log(1-score + 0.0000000001);
+    int _y = y > 0 ? 1 : 0;
+    total_loss += fabs(_y - score);
     num++;  
     if (num%1000000==0){
-        printf("loss : %f, %f\n", total_loss/num, score);
+        cout << "loss :" << total_loss/num << "," << score << "," << _y << endl;
     }
     mtx.unlock();
+
     double mult = y * (1 / (1 + exp(-p * y)) - 1);
 
     //update w_n, w_z

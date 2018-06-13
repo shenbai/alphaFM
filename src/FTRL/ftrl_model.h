@@ -265,7 +265,7 @@ void ftrl_model::outputModel(ofstream& out, bool compress)
           ss << p->vi[j] << " ";
           d += p->vi[j];
         }
-        if (d == 0){
+        if (p->wi == 0 and compress){
           ss.clear();
           ss.str("");
           continue;
@@ -287,14 +287,18 @@ void ftrl_model::outputModel(ofstream& out, bool compress)
         ss << endl;
         if(m%20000==0)
         {
-          out << ss.str();
+          // out << ss.str();
+          string x = ss.str();
+          out.write(x.c_str(), x.size());
           ss.clear();
           ss.str("");
         }
         m++;
       }
     }
-    out << ss.str();
+    // out << ss.str();
+    string x = ss.str();
+    out.write(x.c_str(), x.size());
     ss.clear();
     ss.str("");
     cout << utils::time_str() << " finish!" << endl;
@@ -324,12 +328,13 @@ bool ftrl_model::loadModel(ifstream& in)
     string line;
     if(!getline(in, line))
     {
-        return false;
+      return false;
     }
     vector<string> strVec;
     utils::splitString(line, ' ', &strVec);
     if(strVec.size() != 4)
     {
+        cout << "bias error" << endl;
         return false;
     }
     muBias = new ftrl_model_unit(0, strVec);
@@ -339,6 +344,7 @@ bool ftrl_model::loadModel(ifstream& in)
         utils::splitString(line, ' ', &strVec);
         if(strVec.size() != 3 * factor_num + 4)
         {
+            cout << "vector size is " << strVec.size() << " except " << 3*factor_num + 4 << endl;
             return false;
         }
         int index = stoi(strVec[0]);
