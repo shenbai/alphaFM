@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdio.h>  
 #include "../Frame/pc_frame.h"
-#include "ftrl_model.h"
+#include "sgd_model.h"
 #include "../Sample/fm_sample.h"
 #include "../Utils/utils.h"
 #include <mutex>

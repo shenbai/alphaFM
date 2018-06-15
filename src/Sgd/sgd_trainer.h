@@ -17,7 +17,7 @@ double train_loss;
 int val_num;
 double val_loss;
 
-mutex mtx;
+mutex sgdmtx;
 
 class sgd_trainer: public pc_task {
 public:
@@ -96,7 +96,7 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 	double score = 1.0 / (1.0 + exp(-p));
 
 	// train loss & val loss
-	mtx.lock();
+	sgdmtx.lock();
 	line_num++;
 	int _y = y > 0 ? 1 : 0;
 
@@ -115,7 +115,7 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 				<< val_loss / val_num << endl;
 	}
 
-	mtx.unlock();
+	sgdmtx.unlock();
 
 	double mult = y * (1 / (1 + exp(-score * y)) - 1);
 
