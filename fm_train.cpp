@@ -53,7 +53,7 @@ int get_opt(const vector<string>& args) {
 		if (args[i].compare("-opt") == 0) {
 			if (i == argc - 1)
 				throw invalid_argument("invalid command\n");
-			if (args[i] == "sgd") {
+			if (args[++i].compare("sgd") == 0) {
 				return 1;	// sgd
 			}
 		}
@@ -68,10 +68,19 @@ int main(int argc, char* argv[]) {
 
 	vector<string> args = argv_to_args(argc, argv);
 	int algo = 2;
-	algo = get_opt(args);
+	try
+	{
+		algo = get_opt(args);
+	} catch (const invalid_argument& e) {
+		cout << train_help() << endl;
+		return EXIT_FAILURE;
+	}
+
+//	cout << "algo:" << algo << endl;
 
 	if (algo == 1)	//sgd
-			{
+	{
+		cout << "use sgd methond\n";
 		sgd_trainer_option opt;
 		try {
 			opt.parse_option(argv_to_args(argc, argv));
@@ -102,6 +111,7 @@ int main(int argc, char* argv[]) {
 
 		return 0;
 	} else {	// ftrl
+		cout << "use ftrl methond\n";
 		ftrl_trainer_option opt;
 		try {
 			opt.parse_option(argv_to_args(argc, argv));
