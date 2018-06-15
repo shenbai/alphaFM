@@ -10,13 +10,13 @@
 #include "sgd_trainer_option.h"
 using namespace std;
 
-int line_num;
-int train_num;
-double train_loss;
-int val_num;
-double val_loss;
+int sgd_line_num;
+int sgd_train_num;
+double sgd_train_loss;
+int sgd_val_num;
+double sgd_val_loss;
 
-mutex sgdmtx;
+mutex sgd_mtx;
 
 class sgd_trainer: public pc_task {
 public:
@@ -95,26 +95,26 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 	double score = 1.0 / (1.0 + exp(-p));
 	// train loss & val loss
 
-	sgdmtx.lock();
-	line_num++;
-	sgdmtx.unlock();
+	sgd_mtx.lock();
+	sgd_line_num++;
+	sgd_mtx.unlock();
 
 	int _y = y > 0 ? 1 : 0;
-	if (line_num % 1000 < 5) {
-		sgdmtx.lock();
-		val_num++;
-		val_loss += fabs(_y - score);
-		sgdmtx.unlock();
+	if (sgd_line_num % 1000 < 5) {
+		sgd_mtx.lock();
+		sgd_val_num++;
+		sgd_val_loss += fabs(_y - score);
+		sgd_mtx.unlock();
 	} else {
-		sgdmtx.lock();
-		train_loss += fabs(_y - score);
-		train_num++;
-		sgdmtx.unlock();
+		sgd_mtx.lock();
+		sgd_train_loss += fabs(_y - score);
+		sgd_train_num++;
+		sgd_mtx.unlock();
 
-		if (line_num % 500000 == 0) {
-			cout << "line_num :" << line_num << "\ttrain_loss : "
-					<< train_loss / train_num << "\tval_loss : "
-					<< val_loss / val_num << endl;
+		if (sgd_line_num % 500000 == 0) {
+			cout << "line_num :" << sgd_line_num << "\ttrain_loss : "
+					<< sgd_train_loss / sgd_train_num << "\tval_loss : "
+					<< sgd_val_loss / sgd_val_num << endl;
 		}
 
 		double mult = y * (1 / (1 + exp(-score * y)) - 1);
