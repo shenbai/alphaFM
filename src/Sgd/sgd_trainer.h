@@ -111,7 +111,7 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 		sgd_train_num++;
 		sgd_mtx.unlock();
 
-		if (sgd_line_num % 500000 == 0) {
+		if (sgd_train_num % 500000 == 0) {
 			cout << "line_num :" << sgd_line_num << "\ttrain_loss : "
 					<< sgd_train_loss / sgd_train_num << "\tval_loss : "
 					<< sgd_val_loss / sgd_val_num << endl;

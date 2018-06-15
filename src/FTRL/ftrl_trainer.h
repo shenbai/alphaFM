@@ -146,7 +146,7 @@ void ftrl_trainer::train(int y, const vector<pair<int, double> >& x) {
 		train_num++;
 		mtx.unlock();
 
-		if (line_num % 500000 == 0) {
+		if (train_num % 500000 == 0) {
 			cout << "line_num :" << line_num << "\ttrain_loss : "
 					<< train_loss / train_num << "\tval_loss : "
 					<< val_loss / val_num << endl;
