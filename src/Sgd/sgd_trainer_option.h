@@ -40,7 +40,7 @@ struct sgd_trainer_option {
 			} else if (args[i].compare("-opt") == 0) {
 				if (i == argc - 1)
 					throw invalid_argument("invalid command -opt\n");
-				opt = stoi(args[++i]);
+				opt = args[++i];
 			} else if (args[i].compare("-dim") == 0) {
 				if (i == argc - 1)
 					throw invalid_argument("invalid command -dim\n");
