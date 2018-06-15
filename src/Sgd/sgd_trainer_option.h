@@ -16,7 +16,7 @@ struct sgd_trainer_option {
 					1), b_init(false), force_v_sparse(false), space_size(
 					pow(2, 28)), compress(false), lr(0.01), batch(256) {
 	}
-	string model_path, init_m_path;
+	string model_path, init_m_path, opt;
 	double init_mean, init_stdev, lr;
 	double b_l1, b_l2;	// sgd
 	double w_l1, w_l2;
@@ -37,6 +37,10 @@ struct sgd_trainer_option {
 				if (i == argc - 1)
 					throw invalid_argument("invalid command -s\n");
 				space_size = stoi(args[++i]);
+			} else if (args[i].compare("-opt") == 0) {
+				if (i == argc - 1)
+					throw invalid_argument("invalid command -opt\n");
+				opt = stoi(args[++i]);
 			} else if (args[i].compare("-dim") == 0) {
 				if (i == argc - 1)
 					throw invalid_argument("invalid command -dim\n");
