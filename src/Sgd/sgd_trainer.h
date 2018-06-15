@@ -10,7 +10,6 @@
 #include "sgd_trainer_option.h"
 using namespace std;
 
-
 int line_num;
 int train_num;
 double train_loss;
@@ -94,76 +93,71 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 	double bias = thetaBias->wi;
 	double p = pModel->predict(x, bias, theta, sum);
 	double score = 1.0 / (1.0 + exp(-p));
-
 	// train loss & val loss
+
 	sgdmtx.lock();
 	line_num++;
-	int _y = y > 0 ? 1 : 0;
-
-	if (line_num % 10000 == 1) {
-		val_num++;
-		val_loss += fabs(_y - score);
-		return;
-	}
-
-	train_loss += fabs(_y - score);
-	train_num++;
-
-	if (line_num % 500000 == 0) {
-		cout << "line_num :" << line_num << "\ttrain_loss : "
-				<< train_loss / train_num << "\tval_loss : "
-				<< val_loss / val_num << endl;
-	}
-
 	sgdmtx.unlock();
 
-	double mult = y * (1 / (1 + exp(-score * y)) - 1);
+	int _y = y > 0 ? 1 : 0;
+	if (line_num % 1000 < 5) {
+		sgdmtx.lock();
+		val_num++;
+		val_loss += fabs(_y - score);
+		sgdmtx.unlock();
+	} else {
+		sgdmtx.lock();
+		train_loss += fabs(_y - score);
+		train_num++;
+		sgdmtx.unlock();
 
-	//update w0
-	if (k0) {
-		thetaBias->mtx.lock();
-		double& w0 = thetaBias->wi;
-		w0 -= lr * (mult + b_l1 * w0);
-		thetaBias->mtx.unlock();
-	}
+		if (line_num % 500000 == 0) {
+			cout << "line_num :" << line_num << "\ttrain_loss : "
+					<< train_loss / train_num << "\tval_loss : "
+					<< val_loss / val_num << endl;
+		}
 
-	if (k1) {
+		double mult = y * (1 / (1 + exp(-score * y)) - 1);
+
+		//update w0
+		if (k0) {
+			thetaBias->mtx.lock();
+			double& w0 = thetaBias->wi;
+			w0 -= lr * (mult + b_l1 * w0);
+			thetaBias->mtx.unlock();
+		}
+
+		if (k1) {
+			for (int i = 0; i < xLen; ++i) {
+				sgd_model_unit& mu = i < xLen ? *(theta[i]) : *thetaBias;
+				double xi = i < xLen ? x[i].second : 1.0;
+				if ((i < xLen && k1)) {
+					mu.mtx.lock();
+					mu.wi -= lr
+							* (mult * xi + w_l1 * mu.wi + w_l2 * mu.wi * mu.wi);
+					mu.mtx.unlock();
+				}
+			}
+		}
+
 		for (int i = 0; i < xLen; ++i) {
-			sgd_model_unit& mu = i < xLen ? *(theta[i]) : *thetaBias;
+			sgd_model_unit& mu = *(theta[i]);
 			double xi = i < xLen ? x[i].second : 1.0;
-			if ((i < xLen && k1)) {
+			for (int f = 0; f < pModel->factor_num; ++f) {
 				mu.mtx.lock();
-				mu.wi -= lr * (mult * xi + w_l1 * mu.wi + w_l2 * mu.wi * mu.wi);
+				double& vif = mu.vi[f];
+
+				if (force_v_sparse && 0.0 == mu.wi) {
+					vif = 0.0;
+				} else {
+					double grad = 0;
+					grad = sum[f] * xi - vif * xi * xi;
+					vif -= lr * (mult * grad + v_l1 * vif + v_l2 * vif * vif);
+				}
 				mu.mtx.unlock();
 			}
 		}
 	}
-
-	for (int i = 0; i < xLen; ++i) {
-		sgd_model_unit& mu = *(theta[i]);
-		double xi = i < xLen ? x[i].second : 1.0;
-		for (int f = 0; f < pModel->factor_num; ++f) {
-			mu.mtx.lock();
-			double& vif = mu.vi[f];
-
-			if (force_v_sparse && 0.0 == mu.wi) {
-				vif = 0.0;
-			} else {
-				double grad = 0;
-				grad = sum[f] * xi - vif * xi * xi;
-				vif -= lr * (mult * grad + v_l1 * vif + v_l2 * vif * vif);
-			}
-			mu.mtx.unlock();
-		}
-	}
-
-//      for (int f = 0; f < fm->num_factor; f++) {
-//        for (uint i = 0; i < x.size; i++) {
-//          double& v = fm->v(f,x.data[i].id);
-//          double grad = sum(f) * x.data[i].value - v * x.data[i].value * x.data[i].value;
-//          v -= learn_rate * (multiplier * grad + fm->regv * v);
-//        }
-//      }
 
 	//////////
 	//pModel->debugPrintModel();
