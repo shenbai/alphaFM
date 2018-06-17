@@ -52,7 +52,7 @@ void pc_frame::proThread()
             {
                 time_t now = time(0);
                 tm *ltm = localtime(&now);
-                cout << 1900 + ltm->tm_year << "-" << 1 + ltm->tm_mon << "-" << ltm->tm_mday << " " << ltm->tm_hour <<":"<< ltm->tm_min << ":" << ltm->tm_sec << "\t" << line_num << " lines have finished" << endl;
+                // cout << 1900 + ltm->tm_year << "-" << 1 + ltm->tm_mon << "-" << ltm->tm_mday << " " << ltm->tm_hour <<":"<< ltm->tm_min << ":" << ltm->tm_sec << "\t" << line_num << " lines have finished" << endl;
             }
         }
         bufMtx.unlock();

@@ -1,6 +1,7 @@
 #ifndef SGD_TRAINER_H_
 #define SGD_TRAINER_H_
 #include <iostream>
+#include <fstream>
 #include <stdio.h>  
 #include "../Frame/pc_frame.h"
 #include "../Sample/fm_sample.h"
@@ -8,6 +9,8 @@
 #include <mutex>
 #include "sgd_model.h"
 #include "sgd_trainer_option.h"
+#include <ctime>
+
 using namespace std;
 
 int sgd_line_num;
@@ -104,6 +107,7 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 		sgd_mtx.lock();
 		sgd_val_num++;
 		sgd_val_loss += fabs(_y - score);
+    cerr << _y << " " << score << endl;
 		sgd_mtx.unlock();
 	} else {
 		sgd_mtx.lock();
@@ -111,19 +115,31 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 		sgd_train_num++;
 		sgd_mtx.unlock();
 
-		if (sgd_train_num % 500000 == 0) {
-			cout << "line_num :" << sgd_line_num << "\ttrain_loss : "
-					<< sgd_train_loss / sgd_train_num << "\tval_loss : "
-					<< sgd_val_loss / sgd_val_num << endl;
+		if (sgd_train_num % 100000 == 0) {
+      time_t now = time(0);
+      tm *ltm = localtime(&now);
+      cout << 1900 + ltm->tm_year << "-" << 1 + ltm->tm_mon
+        << "-" << ltm->tm_mday << " " << ltm->tm_hour << ":"
+        << ltm->tm_min << ":" << ltm->tm_sec << " ";
+			cout << "line_num:" << sgd_line_num << "\ttrain_loss:"
+					<< sgd_train_loss / sgd_train_num << "\tval_loss:"
+					<< sgd_val_loss / sgd_val_num << "\tscore:" << score << endl;
+      // cout << "score " << score << endl;
 		}
 
-		double mult = y * (1 / (1 + exp(-score * y)) - 1);
+    // mult = -train.target(train.data->getRowIndex())*(1.0-1.0/(1.0+exp(-train.target(train.data->getRowIndex())*p)));
+    //
+    double mult = -y * (1.0 - 1.0 / (1.0 + exp(-y * p)));
+    sgd_mtx.lock();
+    // cerr << "mult " << mult << " score " << score << " y " << _y << " p " << p << endl;
+		sgd_mtx.unlock();
 
 		//update w0
+    //
 		if (k0) {
 			thetaBias->mtx.lock();
 			double& w0 = thetaBias->wi;
-			w0 -= lr * (mult + b_l1 * w0);
+			w0 -= 0.01 * lr * (mult + b_l1 * w0);
 			thetaBias->mtx.unlock();
 		}
 
@@ -134,7 +150,9 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 				if ((i < xLen && k1)) {
 					mu.mtx.lock();
 					mu.wi -= lr
-							* (mult * xi + w_l1 * mu.wi + w_l2 * mu.wi * mu.wi);
+              // * (mult * xi + w_l1 * mu.wi + w_l2 * mu.wi * mu.wi);
+              * (mult * xi  + w_l1 * mu.wi);
+          // cout << "wi " << mu.wi << endl;
 					mu.mtx.unlock();
 				}
 			}
@@ -152,7 +170,8 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 				} else {
 					double grad = 0;
 					grad = sum[f] * xi - vif * xi * xi;
-					vif -= lr * (mult * grad + v_l1 * vif + v_l2 * vif * vif);
+          // vif -= lr*0.01 * (mult * grad + v_l1 * vif + v_l2 * vif * vif);
+          vif -= lr * (mult * grad);
 				}
 				mu.mtx.unlock();
 			}

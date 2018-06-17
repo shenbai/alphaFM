@@ -63,6 +63,7 @@ int get_opt(const vector<string>& args) {
 
 int main(int argc, char* argv[]) {
 	cin.sync_with_stdio(false);
+  cin.tie(0); 
 	cout.sync_with_stdio(false);
 	srand(time(NULL));
 

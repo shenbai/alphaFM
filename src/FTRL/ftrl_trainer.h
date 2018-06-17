@@ -8,6 +8,7 @@
 #include "../Utils/utils.h"
 #include "ftrl_trainer_option.h"
 #include <mutex>
+#include <ctime>
 
 using namespace std;
 
@@ -79,7 +80,7 @@ void ftrl_trainer::train(int y, const vector<pair<int, double> >& x) {
 	}
 	mtx.lock();
 	line_num++;
-	mtx.lock();
+	mtx.unlock();
 	int _y = y > 0 ? 1 : 0;
 	if (line_num % 1000 < 5) {	// val
 		mtx.lock();
@@ -89,6 +90,7 @@ void ftrl_trainer::train(int y, const vector<pair<int, double> >& x) {
 		double p = pModel->predict(x, bias, theta, sum);
 		double score = 1.0 / (1.0 + exp(-p));
 		val_loss += fabs(_y - score);
+    cerr << _y << " " << score << endl;
 		mtx.unlock();
 	} else {
 		//update w via FTRL
@@ -146,13 +148,21 @@ void ftrl_trainer::train(int y, const vector<pair<int, double> >& x) {
 		train_num++;
 		mtx.unlock();
 
-		if (train_num % 500000 == 0) {
+		if (train_num % 200000 == 0) {
+      time_t now = time(0);
+      tm *ltm = localtime(&now);
+      cout << 1900 + ltm->tm_year << "-" << 1 + ltm->tm_mon
+        << "-" << ltm->tm_mday << " " << ltm->tm_hour << ":"
+        << ltm->tm_min << ":" << ltm->tm_sec << "\t";
 			cout << "line_num :" << line_num << "\ttrain_loss : "
-					<< train_loss / train_num << "\tval_loss : "
-					<< val_loss / val_num << endl;
+				<< train_loss / train_num << "\tval_loss : "
+				<< val_loss / val_num << endl;
 		}
 
 		double mult = y * (1 / (1 + exp(-p * y)) - 1);
+    mtx.lock();
+    // cerr << "mult " << mult << " score " << score << " y " << _y << " p " << p << endl;
+		mtx.unlock();
 
 		//update w_n, w_z
 		for (int i = 0; i <= xLen; ++i) {

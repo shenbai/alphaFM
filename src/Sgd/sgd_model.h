@@ -6,6 +6,7 @@
 #include <vector>
 #include <mutex>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <cmath>
 #include "../Utils/utils.h"
