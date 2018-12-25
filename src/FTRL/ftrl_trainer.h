@@ -82,7 +82,7 @@ void ftrl_trainer::train(int y, const vector<pair<int, double> >& x) {
 	line_num++;
 	mtx.unlock();
 	int _y = y > 0 ? 1 : 0;
-	if (line_num % 1000 < 5) {	// val
+	if (line_num % 1000 < 3) {	// val
 		mtx.lock();
 		val_num++;
 		vector<double> sum(pModel->factor_num);

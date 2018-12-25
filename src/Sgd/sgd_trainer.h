@@ -103,7 +103,7 @@ void sgd_trainer::train(int y, const vector<pair<int, double> >& x) {
 	sgd_mtx.unlock();
 
 	int _y = y > 0 ? 1 : 0;
-	if (sgd_line_num % 1000 < 5) {
+	if (sgd_line_num % 1000 < 3) {
 		sgd_mtx.lock();
 		sgd_val_num++;
 		sgd_val_loss += fabs(_y - score);
